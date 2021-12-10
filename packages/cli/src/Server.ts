@@ -619,7 +619,7 @@ class App {
 		// ----------------------------------------
 
 		if (this.isUserManagementEnabled) {
-			UMRouter.addRoutes.apply(this);
+			await UMRouter.addRoutes.apply(this);
 		}
 
 		// ----------------------------------------
