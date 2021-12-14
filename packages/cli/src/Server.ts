@@ -151,7 +151,7 @@ import { WorkflowEntity } from './databases/entities/WorkflowEntity';
 import { NameRequest } from './WorkflowHelpers';
 import { getNodeTranslationPath } from './TranslationHelpers';
 
-import { UMRouter } from './UserManagement';
+import { userManagementRouter } from './UserManagement';
 
 require('body-parser-xml')(bodyParser);
 
@@ -619,7 +619,7 @@ class App {
 		// ----------------------------------------
 
 		if (this.isUserManagementEnabled) {
-			await UMRouter.addRoutes.apply(this);
+			await userManagementRouter.addRoutes.apply(this);
 		}
 
 		// ----------------------------------------
