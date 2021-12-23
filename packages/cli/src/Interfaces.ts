@@ -424,6 +424,7 @@ export interface IN8nUISettings {
 	telemetry: ITelemetrySettings;
 	personalizationSurvey: IPersonalizationSurvey;
 	defaultLocale: string;
+	userManagement: IUserManagementSettings;
 }
 
 export interface IPersonalizationSurveyAnswers {
@@ -438,6 +439,12 @@ export interface IPersonalizationSurveyAnswers {
 export interface IPersonalizationSurvey {
 	answers?: IPersonalizationSurveyAnswers;
 	shouldShow: boolean;
+}
+
+export interface IUserManagementSettings {
+	enabled: boolean;
+	showSetupOnFirstLoad?: boolean;
+	smtpSetup: boolean;
 }
 
 export interface IPackageVersions {
