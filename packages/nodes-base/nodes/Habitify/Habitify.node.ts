@@ -44,27 +44,39 @@ export class Habitify implements INodeType {
 		],
 		properties: [
 			{
-				displayName: 'Resource',
-				name: 'resource',
+				displayName: 'Triggering Event',
+				name: 'triggeringEvent',
 				type: 'options',
 				options: [
 					{
-						name: 'New User Event',
-						value: 'newUserEvent',
+						name: 'Habit Created',
+						value: 'whenHabitCreated',
 					},
+					{
+						name: 'User Created',
+						value: 'whenUserCreated',
+					},
+					{
+						name: 'User Deleted',
+						value: 'whenUserDeleted'
+					},
+					{
+						name: 'User Event',
+						value: 'whenUserPerformEvent',
+					}
 				],
-				default: 'newUserEvent',
+				default: 'whenUserPerformEvent',
 				required: true,
-				description: 'Resource to listen',
+				description: 'Event will be triggered in Habitify system',
 			},
 			{
 				displayName: 'Event Name',
-				name: 'eventName',
+				name: 'userAnalyticEventName',
 				type: 'string',
 				displayOptions: {
 					show: {
-						resource: [
-							'newUserEvent',
+						triggeringEvent: [
+							'whenUserPerformEvent',
 						],
 					},
 				},
@@ -76,34 +88,75 @@ export class Habitify implements INodeType {
 	// @ts-ignore
 	webhookMethods = {
 		default: {
-			async checkExists(hook: IHookFunctions): Promise<boolean> {
-				const webhookUrl = hook.getNodeWebhookUrl('default');
-				const eventName = hook.getNodeParameter('eventName') as string;
-
-				if (!webhookUrl || !eventName) {
-					throw Error("");
+			async checkExists(this: IHookFunctions): Promise<boolean> {
+				const webhookData = this.getWorkflowStaticData('node');
+				if (webhookData.webhookId === undefined) {
+					// No webhook id is set so no webhook can exist
+					return false;
 				}
 
-				return await N8nHabitifyAPI.analyticEventTrigger.isHookRegistered({this: hook, hookURL: webhookUrl, eventName});
+				const hookId: string = webhookData.webhookId as string;
+				return await N8nHabitifyAPI.analyticEventTrigger.isHookRegistered({this: this, hookId: hookId});
 			},
-			async create(hook: IHookFunctions): Promise<boolean> {
-				const webhookUrl = hook.getNodeWebhookUrl('default');
-				const eventName = hook.getNodeParameter('eventName') as string;
+			async create(this: IHookFunctions): Promise<boolean> {
+				const webhookUrl = this.getNodeWebhookUrl('default');
+				const triggeringEvent = this.getNodeParameter('triggeringEvent') as string;
 
-				if (!webhookUrl || !eventName) {
-					throw Error("");
+				if (!webhookUrl || !triggeringEvent) {
+					throw Error("Unable to find webhook url or triggering event");
 				}
-			  const result = await N8nHabitifyAPI.analyticEventTrigger.registerHook({this: hook, hookURL: webhookUrl, eventName});
+
+				let eventName: string | null;
+				if (triggeringEvent === "whenHabitCreated") {
+					eventName = "__whenHabitCreated"
+				} else if (triggeringEvent === "whenUserCreated") {
+					eventName = "__whenUserCreated"
+				} else if (triggeringEvent === "whenUserDeleted") {
+					eventName = "__whenUserDeleted"
+				} else if (triggeringEvent === "whenUserPerformEvent") {
+					eventName = this.getNodeParameter('userAnalyticEventName') as string;
+				}  else {
+					eventName = null;
+				}
+
+				if (!eventName) {
+					throw Error("Unable to find event name");
+				}
+
+				let responseData;
+				try {
+					responseData = await N8nHabitifyAPI.analyticEventTrigger.registerHook({this: this, hookURL: webhookUrl, eventName});
+				} catch (e) {
+					if (e instanceof Error) {
+						console.log(`Error: ${JSON.stringify(e.stack)}`);
+					} else if (typeof(e) === "string") {
+						console.log(`Error: ${e}`);
+					}
+					throw new Error("Unable to register new hook");
+				}
+				const webhookData = this.getWorkflowStaticData('node');
+				webhookData.webhookId = responseData.hookId as string;
 				return true;
 			},
-			async delete(hook: IHookFunctions): Promise<boolean> {
-				const webhookUrl = hook.getNodeWebhookUrl('default');
-				const eventName = hook.getNodeParameter('eventName') as string;
-
-				if (!webhookUrl || !eventName) {
-					throw Error("");
+			async delete(this: IHookFunctions): Promise<boolean> {
+				const webhookData = this.getWorkflowStaticData("node");
+				const hookId: string = webhookData.webhookId as string;
+				if (hookId === undefined || !hookId) {
+					// No webhook id is set so no webhook can exist
+					return false;
 				}
-			  const result = await N8nHabitifyAPI.analyticEventTrigger.unregisterHook({this: hook, hookURL: webhookUrl, eventName});
+
+				try {
+					await N8nHabitifyAPI.analyticEventTrigger.unregisterHook({this: this, hookId: hookId});
+				} catch (e) {
+					if (e instanceof Error) {
+							console.log(`Error: ${JSON.stringify(e.stack)}`);
+					} else if (typeof(e) === "string") {
+						console.log(`Error: ${e}`);
+					}
+					throw new Error("Unable to register new hook");
+				}
+
 				return true;
 			}
 		}

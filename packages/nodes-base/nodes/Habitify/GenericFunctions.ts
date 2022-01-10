@@ -19,7 +19,7 @@ import {
 const habitifyAPIURL: URL = new URL("https://us-central1-project-8491986773398252429.cloudfunctions.net");
 
 export const analyticEventTrigger = {
-	isHookRegistered: async function(input: {this: IExecuteFunctions | IWebhookFunctions | IHookFunctions | ILoadOptionsFunctions, hookURL: string, eventName: string}): Promise<boolean> {
+	isHookRegistered: async function(input: {this: IExecuteFunctions | IWebhookFunctions | IHookFunctions | ILoadOptionsFunctions, hookId: string}): Promise<boolean> {
 		if (!input.this.helpers.request) {
 			return false;
 		}
@@ -35,8 +35,7 @@ export const analyticEventTrigger = {
 			},
 			method: "GET",
 			qs: {
-				url: input.hookURL,
-				eventName: input.eventName,
+				hookId: input.hookId
 			},
 			uri: requestURL.toString(),
 		};
@@ -48,7 +47,7 @@ export const analyticEventTrigger = {
 			throw error;
 		}
 	},
-	registerHook: async function(input: {this: IExecuteFunctions | IWebhookFunctions | IHookFunctions | ILoadOptionsFunctions, hookURL: string, eventName: string}): Promise<boolean> {
+	registerHook: async function(input: {this: IExecuteFunctions | IWebhookFunctions | IHookFunctions | ILoadOptionsFunctions, hookURL: string, eventName: string}): Promise<any> {
 		if (!input.this.helpers.request) {
 			return false;
 		}
@@ -63,21 +62,16 @@ export const analyticEventTrigger = {
 				"HabitifyN8nClientCredential": apiKey
 			},
 			method: "POST",
-			json: {
+			body: {
 				url: input.hookURL,
 				eventName: input.eventName,
 			},
+			json: true,
 			uri: requestURL.toString(),
 		};
-
-		try {
-			const result = await input.this.helpers.request(requestOptions);
-			return true;
-		} catch (error) {
-			throw error;
-		}
+		return await input.this.helpers.request(requestOptions);
 	},
-	unregisterHook: async function(input: {this: IExecuteFunctions | IWebhookFunctions | IHookFunctions | ILoadOptionsFunctions, hookURL: string, eventName: string}): Promise<boolean> {
+	unregisterHook: async function(input: {this: IExecuteFunctions | IWebhookFunctions | IHookFunctions | ILoadOptionsFunctions, hookId: string}): Promise<boolean> {
 		if (!input.this.helpers.request) {
 			return false;
 		}
@@ -92,9 +86,8 @@ export const analyticEventTrigger = {
 				"HabitifyN8nClientCredential": apiKey
 			},
 			method: "POST",
-			json: {
-				url: input.hookURL,
-				eventName: input.eventName,
+			body: {
+				hookId: input.hookId,
 			},
 			uri: requestURL.toString(),
 		};
