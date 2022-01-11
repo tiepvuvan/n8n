@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - feature/github-action
 
 env:
   IMAGE_NAME: n8n-habitify
