@@ -61,6 +61,14 @@ export class HabitifyTrigger implements INodeType {
 						value: 'whenUserDeleted'
 					},
 					{
+						name: 'Challenge Created',
+						value: 'whenChallengeCreated',
+					},
+					{
+						name: 'Challenge Logged',
+						value: 'whenChallengeLogged',
+					},
+					{
 						name: 'User Event',
 						value: 'whenUserPerformEvent',
 					}
@@ -113,6 +121,10 @@ export class HabitifyTrigger implements INodeType {
 					eventName = "__whenUserCreated"
 				} else if (triggeringEvent === "whenUserDeleted") {
 					eventName = "__whenUserDeleted"
+				} else if (triggeringEvent === "whenChallengeCreated") {
+					eventName = "__whenChallengeCreated"
+				} else if (triggeringEvent === "whenChallengeLogged") {
+					eventName = "__whenChallengeLogged"
 				} else if (triggeringEvent === "whenUserPerformEvent") {
 					eventName = this.getNodeParameter('userAnalyticEventName') as string;
 				}  else {
