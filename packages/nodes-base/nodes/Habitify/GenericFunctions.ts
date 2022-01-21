@@ -103,6 +103,25 @@ export const userAPI = {
 		const textResponse = await node.helpers.request(requestOptions);
 		return JSON.parse(textResponse);
 	},
+	getUserHabits: async function(node: IExecuteFunctions | IWebhookFunctions | IHookFunctions | ILoadOptionsFunctions, userId: string): Promise<any> {
+		if (!node.helpers.request) {
+			return false;
+		}
+		const requestURL = new URL(habitifyAPIURL.toString());
+		requestURL.pathname = nodePath.join("n8nIntegrationEndpoint", "users", userId, "habits");
+		const credentials = await node.getCredentials('habitifyN8nApi') as IDataObject;
+		const apiKey = credentials.apiKey;
+		const requestOptions: OptionsWithUri = {
+			headers: {
+				"Content-Type": "application/json",
+				"HabitifyN8nClientCredential": apiKey
+			},
+			method: "GET",
+			uri: requestURL.toString(),
+		};
+		const textResponse = await node.helpers.request(requestOptions);
+		return JSON.parse(textResponse);
+	},
 	sendPushNotification: async function(node: IExecuteFunctions | IWebhookFunctions | IHookFunctions | ILoadOptionsFunctions, userId: string, title: string | null, body: string | null): Promise<any> {
 		if (!node.helpers.request) {
 			return false;

@@ -69,6 +69,11 @@ export class Habitify implements INodeType {
 							description: 'Get user current plan',
 						},
 						{
+							name: 'Get Habits',
+							value: 'getUserHabits',
+							description: 'Get user habits'
+						},
+						{
 							name: 'Send Push Notification',
 							value: 'sendPushNotification',
 							description: 'Send push notification to user',
@@ -165,6 +170,9 @@ export class Habitify implements INodeType {
 					const userOperation = this.getNodeParameter('userOperation', 0) as string;
 					if (userOperation == "getUserInfo") {
 						const responseData = await N8nHabitifyAPI.userAPI.getUserInfo(this, userId);
+						returnData.push(responseData);
+					} else if (userOperation == "getUserHabits") {
+						const responseData = await N8nHabitifyAPI.userAPI.getUserHabits(this, userId);
 						returnData.push(responseData);
 					} else if (userOperation == "getUserPlan") {
 						const responseData = await N8nHabitifyAPI.userAPI.getUserPlan(this, userId);
